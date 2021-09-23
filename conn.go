@@ -41,11 +41,11 @@ func (c *FireConn) ReadLoop() {
 			headData := make([]byte, HeaderLength)
 
 			if _, err := io.ReadFull(c.Conn, headData); err != nil {
-				log.Println("read msg head error", err)
+				log.Println("read head data error", err)
 				return
 			}
 
-			msg := NewMsg()
+			msg := &FireMsg{}
 			if err := msg.UnpackHead(headData); err != nil {
 				log.Println("read msg head error", err)
 				return

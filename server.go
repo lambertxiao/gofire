@@ -24,7 +24,7 @@ func NewServer(ip string, port int) iface.IServer {
 	return s
 }
 
-func (s *FireServer) Listen(transProtocol iface.TransProtocol) error {
+func (s *FireServer) Serve(transProtocol iface.TransProtocol) error {
 	addr, err := net.ResolveTCPAddr(s.network, fmt.Sprintf("%s:%d", s.ip, s.port))
 	if err != nil {
 		return err
@@ -34,6 +34,8 @@ func (s *FireServer) Listen(transProtocol iface.TransProtocol) error {
 	if err != nil {
 		return err
 	}
+
+	log.Printf("serve on %s:%d\n", s.ip, s.port)
 
 	for {
 		conn, err := listener.AcceptTCP()

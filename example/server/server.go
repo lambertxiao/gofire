@@ -1,13 +1,14 @@
 package main
 
-func main() {
-	// server, err := gofire.NewServer("127.0.0.1", 7777)
-	// if err != nil {
-	// 	panic(err)
-	// }
+import (
+	"gofire"
+)
 
-	// err := server.Serve()
-	// if err != nil {
-	// 	panic(err)
-	// }
+func main() {
+	server := gofire.NewServer("127.0.0.1", 7777)
+	err := server.Serve("")
+
+	if err != nil {
+		panic(err)
+	}
 }

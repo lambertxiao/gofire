@@ -6,17 +6,22 @@ import (
 	"gofire/iface"
 )
 
-const HeaderLength uint32 = 8
+const HeaderLength uint32 = 12
 
 type FireMsg struct {
-	ID            string
+	ID            uint32
 	PayloadLength uint32
 	ActionId      uint32
 	Payload       []byte
 }
 
-func NewMsg() iface.IMsg {
-	m := &FireMsg{}
+func NewMsg(id uint32, actionId uint32, payload []byte) iface.IMsg {
+	m := &FireMsg{
+		ID:            id,
+		ActionId:      actionId,
+		Payload:       payload,
+		PayloadLength: uint32(len(payload)),
+	}
 	return m
 }
 
