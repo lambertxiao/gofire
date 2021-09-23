@@ -19,10 +19,11 @@ type FireConn struct {
 func NewFireConn(conn net.Conn, server iface.IServer) iface.IConn {
 	ctx, cancel := context.WithCancel(context.Background())
 	c := &FireConn{
-		Conn:   conn,
-		server: server,
-		ctx:    ctx,
-		cancel: cancel,
+		Conn:       conn,
+		server:     server,
+		ctx:        ctx,
+		cancel:     cancel,
+		msgChannel: make(chan []byte),
 	}
 	return c
 }
@@ -62,6 +63,7 @@ func (c *FireConn) ReadLoop() {
 			handler := c.server.GetActionHandler(msg.GetAction())
 			if handler == nil {
 				log.Println("not support action")
+				c.WriteMsg(NewMsg(0, 0, []byte("not support action")))
 				return
 			}
 

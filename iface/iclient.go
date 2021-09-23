@@ -1,6 +1,6 @@
 package iface
 
 type IClient interface {
-	Send(IMsg) error
+	SyncSend(IMsg) ([]byte, error)
 	Connect() error
 }

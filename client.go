@@ -1,8 +1,8 @@
 package gofire
 
 import (
-	"fmt"
 	"gofire/iface"
+	"io"
 	"net"
 )
 
@@ -30,19 +30,31 @@ func (c *FireClient) Connect() error {
 	return nil
 }
 
-func (c *FireClient) Send(msg iface.IMsg) error {
+func (c *FireClient) SyncSend(msg iface.IMsg) ([]byte, error) {
 	data, err := msg.Pack()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	_, err = c.conn.Write(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	fmt.Println(data)
-	// c.conn.Read()
+	headData := make([]byte, HeaderLength)
+	_, err = io.ReadFull(c.conn, headData)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil
+	respMsg := &FireMsg{}
+	respMsg.UnpackHead(headData)
+	payload := make([]byte, respMsg.PayloadLength)
+	_, err = io.ReadFull(c.conn, payload)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return payload, nil
 }

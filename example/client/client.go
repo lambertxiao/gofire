@@ -2,6 +2,7 @@ package main
 
 import (
 	"gofire"
+	"log"
 )
 
 func main() {
@@ -12,5 +13,10 @@ func main() {
 	}
 
 	msg := gofire.NewMsg(1, 1, []byte("hello, i am client"))
-	client.Send(msg)
+	resp, err := client.SyncSend(msg)
+	if err != nil {
+		panic(err)
+	}
+
+	log.Println(string(resp))
 }
