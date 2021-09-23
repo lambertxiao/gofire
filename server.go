@@ -8,21 +8,23 @@ import (
 )
 
 type FireServer struct {
-	ip      string
-	port    int
-	network string
+	ip             string
+	port           int
+	network        string
+	actionHandlers map[uint32]iface.IHandler
 }
 
 func NewServer(ip string, port int) iface.IServer {
 	s := &FireServer{
-		ip:      ip,
-		port:    port,
-		network: "tcp4",
+		ip:             ip,
+		port:           port,
+		network:        "tcp4",
+		actionHandlers: make(map[uint32]iface.IHandler),
 	}
 	return s
 }
 
-func (s *FireServer) Listen() error {
+func (s *FireServer) Listen(transProtocol iface.TransProtocol) error {
 	addr, err := net.ResolveTCPAddr(s.network, fmt.Sprintf("%s:%d", s.ip, s.port))
 	if err != nil {
 		return err
@@ -41,11 +43,20 @@ func (s *FireServer) Listen() error {
 		}
 
 		log.Println("get conn from addr ", conn.RemoteAddr().String())
-		fconn := NewFireConn(conn)
+		fconn := NewFireConn(conn, s)
 		go fconn.Handle()
 	}
 }
 
-func (s *FireServer) AddAction(actionId uint32) {
+func (s *FireServer) RegistAction(actionId uint32, handler iface.IHandler) {
+	s.actionHandlers[actionId] = handler
+}
 
+func (s *FireServer) GetActionHandler(actionId uint32) iface.IHandler {
+	h, exist := s.actionHandlers[actionId]
+	if !exist {
+		return nil
+	}
+
+	return h
 }

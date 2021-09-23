@@ -1,7 +1,10 @@
 package iface
 
 type IMsg interface {
-	LoadHead(data []byte) error
+	UnpackHead(headData []byte) error
+	Pack() ([]byte, error)
 	GetPayloadLen() uint32
 	SetPayload(data []byte)
+	GetAction() uint32
+	// GetPayload() []byte
 }
