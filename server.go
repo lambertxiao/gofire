@@ -46,6 +46,6 @@ func (s *FireServer) Listen() error {
 	}
 }
 
-func (s *FireServer) HandleConn(conn net.Conn) {
+func (s *FireServer) AddAction(actionId uint32) {
 
 }

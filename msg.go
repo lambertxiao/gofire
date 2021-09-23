@@ -10,8 +10,8 @@ const HeaderLength uint32 = 8
 
 type FireMsg struct {
 	ID            string
-	Action        string
 	PayloadLength uint32
+	ActionId      uint32
 	Payload       []byte
 }
 
@@ -40,7 +40,7 @@ func (h *FireMsg) LoadHead(data []byte) error {
 		return err
 	}
 
-	err = binary.Read(r, binary.LittleEndian, &h.Action)
+	err = binary.Read(r, binary.LittleEndian, &h.ActionId)
 	if err != nil {
 		return err
 	}
