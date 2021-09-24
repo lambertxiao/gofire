@@ -6,5 +6,5 @@ type IMsg interface {
 	GetPayloadLen() uint32
 	SetPayload(data []byte)
 	GetAction() uint32
-	// GetPayload() []byte
+	GetPayload() []byte
 }

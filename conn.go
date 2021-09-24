@@ -9,7 +9,7 @@ import (
 )
 
 type FireConn struct {
-	net.Conn
+	conn       net.Conn
 	server     iface.IServer
 	ctx        context.Context
 	cancel     context.CancelFunc
@@ -19,7 +19,7 @@ type FireConn struct {
 func NewFireConn(conn net.Conn, server iface.IServer) iface.IConn {
 	ctx, cancel := context.WithCancel(context.Background())
 	c := &FireConn{
-		Conn:       conn,
+		conn:       conn,
 		server:     server,
 		ctx:        ctx,
 		cancel:     cancel,
@@ -33,7 +33,13 @@ func (c *FireConn) Handle() {
 	go c.WriteLoop()
 }
 
+func (c *FireConn) Close() {
+	c.conn.Close()
+	close(c.msgChannel)
+}
+
 func (c *FireConn) ReadLoop() {
+	defer c.Close()
 	for {
 		select {
 		case <-c.ctx.Done():
@@ -41,7 +47,7 @@ func (c *FireConn) ReadLoop() {
 		default:
 			headData := make([]byte, HeaderLength)
 
-			if _, err := io.ReadFull(c.Conn, headData); err != nil {
+			if _, err := io.ReadFull(c.conn, headData); err != nil {
 				log.Println("read head data error", err)
 				return
 			}
@@ -53,13 +59,12 @@ func (c *FireConn) ReadLoop() {
 			}
 
 			payloadData := make([]byte, msg.GetPayloadLen())
-			if _, err := io.ReadFull(c.Conn, payloadData); err != nil {
+			if _, err := io.ReadFull(c.conn, payloadData); err != nil {
 				log.Println("read msg payload error", err)
 				return
 			}
 
 			msg.SetPayload(payloadData)
-
 			handler := c.server.GetActionHandler(msg.GetAction())
 			if handler == nil {
 				log.Println("not support action")
@@ -71,6 +76,8 @@ func (c *FireConn) ReadLoop() {
 				Conn: c,
 				Msg:  msg,
 			}
+
+			log.Println("server receive msg from conn", msg.ID)
 			go handler.Do(req)
 		}
 	}
@@ -82,7 +89,7 @@ func (c *FireConn) WriteLoop() {
 		case <-c.ctx.Done():
 			return
 		case msgData := <-c.msgChannel:
-			_, err := c.Write(msgData)
+			_, err := c.conn.Write(msgData)
 			if err != nil {
 				log.Println("write msg data to connection error", err)
 				return

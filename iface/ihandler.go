@@ -1,9 +1,7 @@
 package iface
 
-import "net"
-
 type Request struct {
-	Conn net.Conn
+	Conn IConn
 	Msg  IMsg
 }
 

@@ -29,6 +29,10 @@ func (m *FireMsg) SetPayload(payload []byte) {
 	m.Payload = payload
 }
 
+func (m *FireMsg) GetPayload() []byte {
+	return m.Payload
+}
+
 func (m *FireMsg) GetPayloadLen() uint32 {
 	return m.PayloadLength
 }

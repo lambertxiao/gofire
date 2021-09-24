@@ -51,6 +51,7 @@ func (s *FireServer) Serve(transProtocol iface.TransProtocol) error {
 }
 
 func (s *FireServer) RegistAction(actionId uint32, handler iface.IHandler) {
+	log.Println("regist action id", actionId)
 	s.actionHandlers[actionId] = handler
 }
 
