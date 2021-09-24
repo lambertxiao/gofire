@@ -7,4 +7,5 @@ type IMsg interface {
 	SetPayload(data []byte)
 	GetAction() uint32
 	GetPayload() []byte
+	GetID() uint32
 }

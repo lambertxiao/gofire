@@ -77,7 +77,7 @@ func (c *FireConn) ReadLoop() {
 				Msg:  msg,
 			}
 
-			log.Println("server receive msg from conn", msg.ID)
+			log.Println("server receive msg from conn with msgId:", msg.ID)
 			go handler.Do(req)
 		}
 	}

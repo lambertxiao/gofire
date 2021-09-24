@@ -41,6 +41,10 @@ func (m *FireMsg) GetAction() uint32 {
 	return m.ActionId
 }
 
+func (m *FireMsg) GetID() uint32 {
+	return m.ID
+}
+
 func (h *FireMsg) UnpackHead(data []byte) error {
 	r := bytes.NewReader(data)
 	err := binary.Read(r, binary.LittleEndian, &h.ID)

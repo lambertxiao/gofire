@@ -1,6 +1,8 @@
 package iface
 
 type IClient interface {
-	SyncSend(IMsg) ([]byte, error)
 	Connect() error
+	Send(IMsg) error
+	OnMsg() <-chan IMsg
+	SetMsgQueueSize(size int)
 }

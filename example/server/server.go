@@ -20,6 +20,6 @@ type FooHandler struct{}
 
 func (h *FooHandler) Do(req iface.Request) {
 	payload := string(req.Msg.GetPayload())
-	msg := gofire.NewMsg(0, 0, []byte("resp your request: "+payload))
+	msg := gofire.NewMsg(req.Msg.GetID(), 0, []byte("resp your request: "+payload))
 	req.Conn.WriteMsg(msg)
 }
