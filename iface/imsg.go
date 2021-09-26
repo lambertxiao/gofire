@@ -9,3 +9,8 @@ type IMsg interface {
 	GetPayload() []byte
 	GetID() uint32
 }
+
+type IMsgCodec interface {
+	Encode(msg IMsg) []byte
+	Decode(payload []byte) IMsg
+}

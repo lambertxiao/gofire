@@ -1,8 +1,8 @@
 package iface
 
 type Request struct {
-	Conn IConn
-	Msg  IMsg
+	Stream IStream
+	Msg    IMsg
 }
 
 type IHandler interface {

@@ -4,59 +4,59 @@ import (
 	"fmt"
 	"gofire/iface"
 	"log"
-	"net"
 )
 
 type FireServer struct {
-	ip             string
-	port           int
-	network        string
-	actionHandlers map[uint32]iface.IHandler
+	endpoint Endpoint
+	routers  map[uint32]iface.IHandler
+
+	// 连接生成器，server不关心具体conn底层的实现
+	connG iface.IConnGenerator
+	// 包编解码器
+	pCodec iface.IPacketCodec
+	// 消息编解码器
+	mCodec iface.IMsgCodec
 }
 
-func NewServer(ip string, port int) iface.IServer {
+type Endpoint struct {
+	Ip   string
+	Port int
+}
+
+func (e Endpoint) String() string {
+	return fmt.Sprintf("%s:%d", e.Ip, e.Port)
+}
+
+func NewServer(
+	connG iface.IConnGenerator,
+	pCodec iface.IPacketCodec,
+	mCodec iface.IMsgCodec,
+) iface.IServer {
 	s := &FireServer{
-		ip:             ip,
-		port:           port,
-		network:        "tcp4",
-		actionHandlers: make(map[uint32]iface.IHandler),
+		connG:   connG,
+		pCodec:  pCodec,
+		mCodec:  mCodec,
+		routers: make(map[uint32]iface.IHandler),
 	}
+
 	return s
 }
 
-func (s *FireServer) Serve(transProtocol iface.TransProtocol) error {
-	addr, err := net.ResolveTCPAddr(s.network, fmt.Sprintf("%s:%d", s.ip, s.port))
-	if err != nil {
-		return err
-	}
-
-	listener, err := net.ListenTCP(s.network, addr)
-	if err != nil {
-		return err
-	}
-
-	log.Printf("serve on %s:%d\n", s.ip, s.port)
-
+func (s *FireServer) Listen(transProtocol iface.TransProtocol) error {
 	for {
-		conn, err := listener.AcceptTCP()
-		if err != nil {
-			log.Println("accept tcp err", err)
-			continue
-		}
-
-		log.Println("get conn from addr ", conn.RemoteAddr().String())
-		fconn := NewFireConn(conn, s)
-		go fconn.Handle()
+		c := s.connG.Gen()
+		stream := NewFireStream(c, s)
+		go stream.Run()
 	}
 }
 
-func (s *FireServer) RegistAction(actionId uint32, handler iface.IHandler) {
+func (s *FireServer) AddRouter(actionId uint32, handler iface.IHandler) {
 	log.Println("regist action id", actionId)
-	s.actionHandlers[actionId] = handler
+	s.routers[actionId] = handler
 }
 
 func (s *FireServer) GetActionHandler(actionId uint32) iface.IHandler {
-	h, exist := s.actionHandlers[actionId]
+	h, exist := s.routers[actionId]
 	if !exist {
 		return nil
 	}

@@ -4,7 +4,6 @@ import (
 	"gofire/iface"
 	"io"
 	"log"
-	"net"
 )
 
 const DefaultMsgQueueSize = 1024
@@ -12,9 +11,11 @@ const DefaultMsgQueueSize = 1024
 type FireClient struct {
 	server       string
 	network      string
-	conn         net.Conn
 	msgChannel   chan iface.IMsg
 	msgQueueSize int
+
+	conn          iface.IConn
+	connGenerator iface.IConnGenerator
 }
 
 func NewClient(server string) iface.IClient {
@@ -32,12 +33,7 @@ func (c *FireClient) Connect() error {
 		c.msgChannel = make(chan iface.IMsg, DefaultMsgQueueSize)
 	}
 
-	conn, err := net.Dial(c.network, c.server)
-	if err != nil {
-		return err
-	}
-
-	c.conn = conn
+	c.conn = c.connGenerator.Gen()
 	c.WaitMsg()
 
 	return nil

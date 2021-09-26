@@ -1,8 +1,11 @@
 package iface
 
+import "io"
+
 type IConn interface {
-	Handle()
-	ReadLoop()
-	WriteLoop()
-	WriteMsg(IMsg)
+	io.ReadWriteCloser
+	// Handle()
+	// ReadLoop()
+	// WriteLoop()
+	// WriteMsg(IMsg)
 }
