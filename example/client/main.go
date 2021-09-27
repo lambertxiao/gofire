@@ -10,7 +10,7 @@ import (
 func main() {
 	endpoint := gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
 	// generator := generator.NewTCPClientConnGenerator(endpoint)
-	generator, err := generator.NewUDPConnGenerator(endpoint)
+	generator, err := generator.NewUDPClientConnGenerator(endpoint)
 	if err != nil {
 		panic(err)
 	}

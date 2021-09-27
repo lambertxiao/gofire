@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"gofire/core"
 	"gofire/iface"
 	"net"
@@ -8,10 +9,13 @@ import (
 
 type UDPServerConnGenerator struct {
 	conn *net.UDPConn
+	ch   chan bool
 }
 
 func NewUDPServerConnGenerator(endpoint core.Endpoint) (iface.IConnGenerator, error) {
-	g := &UDPServerConnGenerator{}
+	g := &UDPServerConnGenerator{
+		ch: make(chan bool, 1),
+	}
 	addr, err := net.ResolveUDPAddr("udp4", endpoint.String())
 	if err != nil {
 		return nil, err
@@ -23,9 +27,12 @@ func NewUDPServerConnGenerator(endpoint core.Endpoint) (iface.IConnGenerator, er
 	}
 
 	g.conn = conn
+
 	return g, nil
 }
 
 func (g *UDPServerConnGenerator) Gen() (iface.IConn, error) {
+	g.ch <- true
+	fmt.Println("kkk")
 	return g.conn, nil
 }
