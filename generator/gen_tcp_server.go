@@ -27,12 +27,10 @@ func NewTCPServerConnGenerator(endpoint core.Endpoint) (iface.IConnGenerator, er
 }
 
 func (g *TCPServerConnGenerator) Gen() (iface.IConn, error) {
-	for {
-		conn, err := g.listener.AcceptTCP()
-		if err != nil {
-			return nil, err
-		}
-
-		return conn, nil
+	conn, err := g.listener.AcceptTCP()
+	if err != nil {
+		return nil, err
 	}
+
+	return conn, nil
 }
