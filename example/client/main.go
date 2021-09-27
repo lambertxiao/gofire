@@ -17,13 +17,13 @@ func main() {
 		pcodec,
 		mcodec,
 	)
-	helloMsg := proto.Message{
+	helloMsg := &proto.Message{
 		Head: proto.MessageHead{
 			MsgId:  "0000-0000-0000-0001",
-			Action: "",
+			Action: "hello",
 		},
 		Body: map[string]interface{}{
-			"foo": "payload",
+			"name": "foo",
 		},
 	}
 

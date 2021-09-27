@@ -15,7 +15,7 @@ func NewMsgSSM() *MsgSSM {
 	return m
 }
 
-func (m *MsgSSM) Done() iface.IMsg {
+func (m *MsgSSM) Return() iface.IMsg {
 	m.WaitGroup.Wait()
 	return m.Resp
 }

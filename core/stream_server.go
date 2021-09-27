@@ -21,7 +21,7 @@ func NewServerStream(conn iface.IConn, server *FireServer) iface.IStream {
 		server:     server,
 		ctx:        ctx,
 		cancel:     cancel,
-		msgChannel: make(chan iface.IMsg),
+		msgChannel: make(chan iface.IMsg, 2),
 	}
 	return s
 }
@@ -37,7 +37,7 @@ func (s *ServerStream) Close() {
 }
 
 func (s *ServerStream) ReadLoop() {
-	defer s.Close()
+	// defer s.Close()
 	for {
 		select {
 		case <-s.ctx.Done():
@@ -60,9 +60,10 @@ func (s *ServerStream) ReadLoop() {
 				Msg:    msg,
 			}
 
+			log.Printf("server receive msg: %+v\n", msg)
 			handler := s.server.GetHandler(msg.GetAction())
 			if handler == nil {
-				log.Println("not support action")
+				log.Println("not support action for action:", msg.GetAction())
 				return
 			}
 
@@ -77,21 +78,26 @@ func (s *ServerStream) WriteLoop() {
 		case <-s.ctx.Done():
 			return
 		case msg := <-s.msgChannel:
+			log.Println("WriteLoop 1")
 			msgData, err := s.server.mcodec.Encode(msg)
 			if err != nil {
 				log.Println("mcodec encode msg error", err)
 				continue
 			}
 
+			log.Println("WriteLoop 2")
+
 			err = s.server.pcodec.Encode(msgData, s.conn)
 			if err != nil {
 				log.Println("pcodec encode msg error", err)
 				continue
 			}
+			log.Println("WriteLoop 3")
 		}
 	}
 }
 
 func (s *ServerStream) Write(msg iface.IMsg) {
 	s.msgChannel <- msg
+	log.Println("server write msg to channel")
 }

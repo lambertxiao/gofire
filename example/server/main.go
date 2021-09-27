@@ -32,13 +32,13 @@ func main() {
 type FooHandler struct{}
 
 func (h *FooHandler) Do(req iface.Request) {
-	msg := proto.Message{
+	msg := &proto.Message{
 		Head: proto.MessageHead{
 			MsgId:  "0000-0000-0000-0001",
-			Action: "/hello",
+			Action: "hello-resp",
 		},
 		Body: map[string]interface{}{
-			"foo": "payload",
+			"name": "bar",
 		},
 	}
 

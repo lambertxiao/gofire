@@ -71,7 +71,8 @@ func (c *FireClient) Send(msg iface.IMsg) (iface.IMsg, error) {
 	log.Println(1)
 	stream.Flow()
 	log.Println("wait done")
-	resp := ssm.Done()
+	resp := ssm.Return()
+	log.Println("done")
 
 	return resp, nil
 }
