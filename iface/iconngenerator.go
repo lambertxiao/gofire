@@ -1,5 +1,5 @@
 package iface
 
 type IConnGenerator interface {
-	Gen() IConn
+	Gen() (IConn, error)
 }

@@ -1,8 +1,8 @@
-package gofire
+package generator
 
 import (
+	"gofire/core"
 	"gofire/iface"
-	"log"
 	"net"
 )
 
@@ -10,7 +10,7 @@ type TCPServerConnGenerator struct {
 	listener *net.TCPListener
 }
 
-func NewTCPServerConnGenerator(endpoint Endpoint) (iface.IConnGenerator, error) {
+func NewTCPServerConnGenerator(endpoint core.Endpoint) (iface.IConnGenerator, error) {
 	g := &TCPServerConnGenerator{}
 	addr, err := net.ResolveTCPAddr("tcp4", endpoint.String())
 	if err != nil {
@@ -26,14 +26,13 @@ func NewTCPServerConnGenerator(endpoint Endpoint) (iface.IConnGenerator, error) 
 	return g, nil
 }
 
-func (g *TCPServerConnGenerator) Gen() iface.IConn {
+func (g *TCPServerConnGenerator) Gen() (iface.IConn, error) {
 	for {
 		conn, err := g.listener.AcceptTCP()
 		if err != nil {
-			log.Println(err)
-			continue
+			return nil, err
 		}
 
-		return conn
+		return conn, nil
 	}
 }

@@ -1,7 +1,8 @@
 package iface
 
 type IServer interface {
-	AddRouter(actionId uint32, handler IHandler)
-	GetActionHandler(actionId uint32) IHandler
-	Listen(transProtocol TransProtocol) error
+	RegistAction(action string, handler IHandler)
+	GetHandler(action string) IHandler
+	Listen() error
+	// RegistProto(s IProto, c IProto)
 }

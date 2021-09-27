@@ -1,7 +1,8 @@
 package iface
 
 type IStream interface {
-	Run()
+	Flow()
 	Write(IMsg)
 	ReadLoop()
+	WriteLoop()
 }
