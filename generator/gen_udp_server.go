@@ -8,8 +8,28 @@ import (
 )
 
 type UDPServerConnGenerator struct {
-	conn *net.UDPConn
+	conn *WrapUDPConn
 	ch   chan bool
+}
+
+type WrapUDPConn struct {
+	*net.UDPConn
+	addr *net.UDPAddr
+}
+
+func (c *WrapUDPConn) Read(b []byte) (int, error) {
+	n, addr, err := c.UDPConn.ReadFromUDP(b)
+	if err != nil {
+		return n, err
+	}
+
+	c.addr = addr
+	return n, nil
+}
+
+func (c *WrapUDPConn) Write(b []byte) (int, error) {
+	fmt.Println(c.addr)
+	return c.UDPConn.WriteToUDP(b, c.addr)
 }
 
 func NewUDPServerConnGenerator(endpoint core.Endpoint) (iface.IConnGenerator, error) {
@@ -26,13 +46,12 @@ func NewUDPServerConnGenerator(endpoint core.Endpoint) (iface.IConnGenerator, er
 		return nil, err
 	}
 
-	g.conn = conn
+	g.conn = &WrapUDPConn{UDPConn: conn}
 
 	return g, nil
 }
 
 func (g *UDPServerConnGenerator) Gen() (iface.IConn, error) {
 	g.ch <- true
-	fmt.Println("kkk")
 	return g.conn, nil
 }

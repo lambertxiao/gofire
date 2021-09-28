@@ -48,7 +48,6 @@ func (s *ServerStream) ReadLoop() {
 				log.Println("pcodec decode error", err)
 				return
 			}
-
 			msg, err := s.server.mcodec.Decode(data)
 			if err != nil {
 				log.Println("mcodec decode error", err)
@@ -78,26 +77,22 @@ func (s *ServerStream) WriteLoop() {
 		case <-s.ctx.Done():
 			return
 		case msg := <-s.msgChannel:
-			log.Println("WriteLoop 1")
 			msgData, err := s.server.mcodec.Encode(msg)
 			if err != nil {
 				log.Println("mcodec encode msg error", err)
 				continue
 			}
 
-			log.Println("WriteLoop 2")
-
 			err = s.server.pcodec.Encode(msgData, s.conn)
 			if err != nil {
 				log.Println("pcodec encode msg error", err)
 				continue
 			}
-			log.Println("WriteLoop 3")
 		}
 	}
 }
 
 func (s *ServerStream) Write(msg iface.IMsg) {
-	s.msgChannel <- msg
 	log.Println("server write msg to channel")
+	s.msgChannel <- msg
 }

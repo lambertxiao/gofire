@@ -9,8 +9,8 @@ import (
 
 func main() {
 	endpoint := gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
-	// sgenerator, err := generator.NewTCPServerConnGenerator(endpoint)
-	sgenerator, err := generator.NewUDPServerConnGenerator(endpoint)
+	sgenerator, err := generator.NewTCPServerConnGenerator(endpoint)
+	// sgenerator, err := generator.NewUDPServerConnGenerator(endpoint)
 	if err != nil {
 		panic(err)
 	}

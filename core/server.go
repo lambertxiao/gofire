@@ -50,7 +50,6 @@ func (s *FireServer) Listen() error {
 
 		stream := NewServerStream(c, s)
 		go stream.Flow()
-		log.Println("xxx")
 	}
 }
 
