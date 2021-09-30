@@ -40,6 +40,7 @@ func (s *FireServer) Listen() error {
 	log.Println("server listening...")
 	for {
 		ch, err := s.generator.Gen()
+		log.Println("get channel from generator")
 		if err != nil {
 			log.Println(err)
 			break

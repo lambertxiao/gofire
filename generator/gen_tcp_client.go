@@ -9,11 +9,11 @@ type TCPClientConnGenerator struct {
 	endpoint core.Endpoint
 }
 
-func NewTCPClientConnGenerator(endpoint core.Endpoint) core.IChannelGenerator {
+func NewTCPClientConnGenerator(endpoint core.Endpoint) (core.IChannelGenerator, error) {
 	g := &TCPClientConnGenerator{
 		endpoint: endpoint,
 	}
-	return g
+	return g, nil
 }
 
 func (g *TCPClientConnGenerator) Gen() (core.IChannel, error) {
