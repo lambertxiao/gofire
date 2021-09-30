@@ -1,7 +1,6 @@
 package main
 
 import (
-	"gofire/core"
 	gofire "gofire/core"
 	"gofire/example/proto"
 	"gofire/generator"
@@ -16,7 +15,7 @@ var mcodec gofire.IMsgCodec
 func init() {
 	endpoint = gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
 	gen = generator.NewTCPClientConnGenerator(endpoint)
-	pcodec = gofire.NewPacketCodec(core.TransProtocol{Name: 1, Version: 1})
+	pcodec = gofire.NewPacketCodec(gofire.TransProtocol{Name: 1, Version: 1})
 	mcodec = proto.NewCustomMsgCodec()
 }
 
