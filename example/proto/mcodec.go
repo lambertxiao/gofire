@@ -1,15 +1,17 @@
 package proto
 
-import "gofire/iface"
+import (
+	"gofire/core"
+)
 
-type MsgCodec struct{}
+type CustomMsgCodec struct{}
 
-func NewMsgCodec() iface.IMsgCodec {
-	c := &MsgCodec{}
+func NewCustomMsgCodec() core.IMsgCodec {
+	c := &CustomMsgCodec{}
 	return c
 }
 
-func (c *MsgCodec) Encode(msg iface.IMsg) ([]byte, error) {
+func (c *CustomMsgCodec) Encode(msg core.IMsg) ([]byte, error) {
 	payload, err := msg.Serialize()
 	if err != nil {
 		return payload, err
@@ -18,7 +20,7 @@ func (c *MsgCodec) Encode(msg iface.IMsg) ([]byte, error) {
 	return payload, nil
 }
 
-func (c *MsgCodec) Decode(payload []byte) (iface.IMsg, error) {
+func (c *CustomMsgCodec) Decode(payload []byte) (core.IMsg, error) {
 	msg := new(Message)
 	err := msg.Unserialize(payload)
 	if err != nil {

@@ -2,26 +2,25 @@ package core
 
 import (
 	"context"
-	"gofire/iface"
 	"log"
 )
 
 type ServerStream struct {
-	conn       iface.IConn
+	conn       IConn
 	server     *FireServer
 	ctx        context.Context
 	cancel     context.CancelFunc
-	msgChannel chan iface.IMsg
+	msgChannel chan IMsg
 }
 
-func NewServerStream(conn iface.IConn, server *FireServer) iface.IStream {
+func NewServerStream(conn IConn, server *FireServer) IStream {
 	ctx, cancel := context.WithCancel(context.Background())
 	s := &ServerStream{
 		conn:       conn,
 		server:     server,
 		ctx:        ctx,
 		cancel:     cancel,
-		msgChannel: make(chan iface.IMsg, 2),
+		msgChannel: make(chan IMsg, 2),
 	}
 	return s
 }
@@ -54,7 +53,7 @@ func (s *ServerStream) ReadLoop() {
 				return
 			}
 
-			req := iface.Request{
+			req := Request{
 				Stream: s,
 				Msg:    msg,
 			}
@@ -92,7 +91,7 @@ func (s *ServerStream) WriteLoop() {
 	}
 }
 
-func (s *ServerStream) Write(msg iface.IMsg) {
+func (s *ServerStream) Write(msg IMsg) {
 	log.Println("server write msg to channel")
 	s.msgChannel <- msg
 }

@@ -1,7 +1,6 @@
 package core
 
 import (
-	"gofire/iface"
 	"log"
 )
 
@@ -9,21 +8,21 @@ const DefaultMsgQueueSize = 1024
 
 type FireClient struct {
 	server       string
-	msgChannel   chan iface.IMsg
+	msgChannel   chan IMsg
 	msgQueueSize int
 
-	conn   iface.IConn
-	connG  iface.IConnGenerator
-	pcodec iface.IPacketCodec
-	mcodec iface.IMsgCodec
+	conn   IConn
+	connG  IConnGenerator
+	pcodec IPacketCodec
+	mcodec IMsgCodec
 }
 
 func NewClient(
 	server string,
-	connG iface.IConnGenerator,
-	pcodec iface.IPacketCodec,
-	mcodec iface.IMsgCodec,
-) iface.IClient {
+	connG IConnGenerator,
+	pcodec IPacketCodec,
+	mcodec IMsgCodec,
+) IClient {
 	c := &FireClient{
 		server: server,
 		connG:  connG,
@@ -57,7 +56,7 @@ func (c *FireClient) WaitMsg() {
 	}()
 }
 
-func (c *FireClient) Send(msg iface.IMsg) (iface.IMsg, error) {
+func (c *FireClient) Send(msg IMsg) (IMsg, error) {
 	conn, err := c.connG.Gen()
 	if err != nil {
 		return nil, err
@@ -73,6 +72,6 @@ func (c *FireClient) Send(msg iface.IMsg) (iface.IMsg, error) {
 	return resp, nil
 }
 
-func (c *FireClient) OnMsg() <-chan iface.IMsg {
+func (c *FireClient) OnMsg() <-chan IMsg {
 	return c.msgChannel
 }

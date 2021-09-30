@@ -2,18 +2,17 @@ package core
 
 import (
 	"fmt"
-	"gofire/iface"
 	"log"
 )
 
 type FireServer struct {
-	routers map[string]iface.IHandler
+	routers map[string]IHandler
 	// 连接生成器，server不关心具体conn底层的实现
-	connG iface.IConnGenerator
+	connG IConnGenerator
 	// 包编解码器
-	pcodec iface.IPacketCodec
+	pcodec IPacketCodec
 	// 消息编解码器
-	mcodec iface.IMsgCodec
+	mcodec IMsgCodec
 }
 
 type Endpoint struct {
@@ -26,15 +25,15 @@ func (e Endpoint) String() string {
 }
 
 func NewServer(
-	connG iface.IConnGenerator,
-	pcodec iface.IPacketCodec,
-	mcodec iface.IMsgCodec,
-) iface.IServer {
+	connG IConnGenerator,
+	pcodec IPacketCodec,
+	mcodec IMsgCodec,
+) IServer {
 	s := &FireServer{
 		connG:   connG,
 		pcodec:  pcodec,
 		mcodec:  mcodec,
-		routers: make(map[string]iface.IHandler),
+		routers: make(map[string]IHandler),
 	}
 
 	return s
@@ -53,12 +52,12 @@ func (s *FireServer) Listen() error {
 	}
 }
 
-func (s *FireServer) RegistAction(action string, handler iface.IHandler) {
+func (s *FireServer) RegistAction(action string, handler IHandler) {
 	log.Println("regist action id", action)
 	s.routers[action] = handler
 }
 
-func (s *FireServer) GetHandler(action string) iface.IHandler {
+func (s *FireServer) GetHandler(action string) IHandler {
 	h, exist := s.routers[action]
 	if !exist {
 		return nil

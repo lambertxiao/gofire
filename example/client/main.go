@@ -16,7 +16,7 @@ func main() {
 	// }
 
 	pcodec := gofire.NewPacketCodec()
-	mcodec := proto.NewMsgCodec()
+	mcodec := proto.NewCustomMsgCodec()
 	client := gofire.NewClient(
 		endpoint.String(),
 		generator,

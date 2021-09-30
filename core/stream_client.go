@@ -2,20 +2,19 @@ package core
 
 import (
 	"context"
-	"gofire/iface"
 	"log"
 )
 
 type ClientStream struct {
 	client     *FireClient
-	conn       iface.IConn
+	conn       IConn
 	ssm        *MsgSSM
 	ctx        context.Context
 	cancel     context.CancelFunc
-	msgChannel chan iface.IMsg
+	msgChannel chan IMsg
 }
 
-func NewClientStream(conn iface.IConn, client *FireClient, ssm *MsgSSM) iface.IStream {
+func NewClientStream(conn IConn, client *FireClient, ssm *MsgSSM) IStream {
 	ctx, cancel := context.WithCancel(context.Background())
 	s := &ClientStream{
 		client:     client,
@@ -23,7 +22,7 @@ func NewClientStream(conn iface.IConn, client *FireClient, ssm *MsgSSM) iface.IS
 		ctx:        ctx,
 		cancel:     cancel,
 		ssm:        ssm,
-		msgChannel: make(chan iface.IMsg, 2),
+		msgChannel: make(chan IMsg, 2),
 	}
 	return s
 }
@@ -33,7 +32,7 @@ func (s *ClientStream) Flow() {
 	go s.WriteLoop()
 }
 
-func (s *ClientStream) Write(msg iface.IMsg) {
+func (s *ClientStream) Write(msg IMsg) {
 	s.msgChannel <- msg
 }
 

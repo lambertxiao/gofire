@@ -1,13 +1,12 @@
 package core
 
 import (
-	"gofire/iface"
 	"sync"
 )
 
 type MsgSSM struct {
 	sync.WaitGroup
-	Resp iface.IMsg
+	Resp IMsg
 }
 
 func NewMsgSSM() *MsgSSM {
@@ -15,7 +14,7 @@ func NewMsgSSM() *MsgSSM {
 	return m
 }
 
-func (m *MsgSSM) Return() iface.IMsg {
+func (m *MsgSSM) Return() IMsg {
 	m.WaitGroup.Wait()
 	return m.Resp
 }

@@ -2,7 +2,6 @@ package generator
 
 import (
 	"gofire/core"
-	"gofire/iface"
 	"net"
 )
 
@@ -10,7 +9,7 @@ type UDPClientConnGenerator struct {
 	addr *net.UDPAddr
 }
 
-func NewUDPClientConnGenerator(endpoint core.Endpoint) (iface.IConnGenerator, error) {
+func NewUDPClientConnGenerator(endpoint core.Endpoint) (core.IConnGenerator, error) {
 	g := &UDPClientConnGenerator{}
 	addr, err := net.ResolveUDPAddr("udp4", endpoint.String())
 	if err != nil {
@@ -21,7 +20,7 @@ func NewUDPClientConnGenerator(endpoint core.Endpoint) (iface.IConnGenerator, er
 	return g, nil
 }
 
-func (g *UDPClientConnGenerator) Gen() (iface.IConn, error) {
+func (g *UDPClientConnGenerator) Gen() (core.IConn, error) {
 	conn, err := net.DialUDP("udp4", nil, g.addr)
 	if err != nil {
 		return nil, err

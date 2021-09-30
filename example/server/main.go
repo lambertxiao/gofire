@@ -1,24 +1,23 @@
 package main
 
 import (
-	gofire "gofire/core"
+	"gofire/core"
 	"gofire/example/proto"
 	"gofire/generator"
-	"gofire/iface"
 )
 
 func main() {
-	endpoint := gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
-	sgenerator, err := generator.NewTCPServerConnGenerator(endpoint)
-	// sgenerator, err := generator.NewUDPServerConnGenerator(endpoint)
+	endpoint := core.Endpoint{Ip: "127.0.0.1", Port: 7777}
+	generator, err := generator.NewTCPServerConnGenerator(endpoint)
+	// generator, err := generator.NewUDPServerConnGenerator(endpoint)
 	if err != nil {
 		panic(err)
 	}
 
-	pcodec := gofire.NewPacketCodec()
-	mcodec := proto.NewMsgCodec()
-	server := gofire.NewServer(
-		sgenerator, pcodec, mcodec,
+	pcodec := core.NewPacketCodec()
+	mcodec := proto.NewCustomMsgCodec()
+	server := core.NewServer(
+		generator, pcodec, mcodec,
 	)
 
 	handler := &FooHandler{}
@@ -32,7 +31,7 @@ func main() {
 
 type FooHandler struct{}
 
-func (h *FooHandler) Do(req iface.Request) {
+func (h *FooHandler) Do(req core.Request) {
 	msg := &proto.Message{
 		Head: proto.MessageHead{
 			MsgId:  "0000-0000-0000-0001",

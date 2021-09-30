@@ -23,7 +23,3 @@ func (m *Message) Serialize() ([]byte, error) {
 func (m *Message) Unserialize(data []byte) error {
 	return json.Unmarshal(data, m)
 }
-
-func (m *Message) Size() uint32 {
-	return 0
-}

@@ -2,13 +2,12 @@ package core
 
 import (
 	"encoding/binary"
-	"gofire/iface"
 	"io"
 )
 
 type PacketCodec struct{}
 
-func NewPacketCodec() iface.IPacketCodec {
+func NewPacketCodec() IPacketCodec {
 	c := &PacketCodec{}
 	return c
 }

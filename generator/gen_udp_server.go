@@ -3,7 +3,6 @@ package generator
 import (
 	"fmt"
 	"gofire/core"
-	"gofire/iface"
 	"net"
 )
 
@@ -32,7 +31,7 @@ func (c *WrapUDPConn) Write(b []byte) (int, error) {
 	return c.UDPConn.WriteToUDP(b, c.addr)
 }
 
-func NewUDPServerConnGenerator(endpoint core.Endpoint) (iface.IConnGenerator, error) {
+func NewUDPServerConnGenerator(endpoint core.Endpoint) (core.IConnGenerator, error) {
 	g := &UDPServerConnGenerator{
 		ch: make(chan bool, 1),
 	}
@@ -51,7 +50,7 @@ func NewUDPServerConnGenerator(endpoint core.Endpoint) (iface.IConnGenerator, er
 	return g, nil
 }
 
-func (g *UDPServerConnGenerator) Gen() (iface.IConn, error) {
+func (g *UDPServerConnGenerator) Gen() (core.IConn, error) {
 	g.ch <- true
 	return g.conn, nil
 }
