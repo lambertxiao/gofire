@@ -1,77 +1,42 @@
 package core
 
 import (
-	"log"
+	"context"
+	"errors"
+	"time"
 )
 
-const DefaultMsgQueueSize = 1024
-
 type FireClient struct {
-	server       string
-	msgChannel   chan IMsg
-	msgQueueSize int
-
-	conn   IConn
-	connG  IConnGenerator
-	pcodec IPacketCodec
-	mcodec IMsgCodec
+	transport ITransport
 }
 
 func NewClient(
-	server string,
-	connG IConnGenerator,
-	pcodec IPacketCodec,
-	mcodec IMsgCodec,
+	transport ITransport,
 ) IClient {
 	c := &FireClient{
-		server: server,
-		connG:  connG,
-		pcodec: pcodec,
-		mcodec: mcodec,
+		transport: transport,
 	}
+
 	return c
 }
 
-func (c *FireClient) SetMsgQueueSize(size int) {
-	c.msgQueueSize = size
-}
-
-func (c *FireClient) WaitMsg() {
-	go func() {
-		for {
-			data, err := c.pcodec.Decode(c.conn)
-			if err != nil {
-				log.Println("pcodec decode err: ", err)
-				return
-			}
-
-			msg, err := c.mcodec.Decode(data)
-			if err != nil {
-				log.Println("mcodec decode err: ", err)
-				return
-			}
-
-			c.msgChannel <- msg
-		}
-	}()
-}
-
 func (c *FireClient) Send(msg IMsg) (IMsg, error) {
-	conn, err := c.connG.Gen()
-	if err != nil {
-		return nil, err
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	ch := make(chan bool)
+	var ret IMsg
+	var err error
+
+	go func() {
+		ret, err = c.transport.RoundTrip(msg)
+		ch <- true
+	}()
+
+	select {
+	case <-ctx.Done():
+		return nil, errors.New("send time out")
+	case <-ch:
+		return ret, err
 	}
-
-	ssm := NewMsgSSM()
-	ssm.Add(1)
-	stream := NewClientStream(conn, c, ssm)
-	stream.Write(msg)
-	stream.Flow()
-	resp := ssm.Return()
-
-	return resp, nil
-}
-
-func (c *FireClient) OnMsg() <-chan IMsg {
-	return c.msgChannel
 }

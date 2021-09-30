@@ -6,13 +6,10 @@ import (
 )
 
 type FireServer struct {
-	routers map[string]IHandler
-	// 连接生成器，server不关心具体conn底层的实现
-	connG IConnGenerator
-	// 包编解码器
-	pcodec IPacketCodec
-	// 消息编解码器
-	mcodec IMsgCodec
+	generator IChannelGenerator
+	mcodec    IMsgCodec
+	pcodec    IPacketCodec
+	routers   map[string]IHandler
 }
 
 type Endpoint struct {
@@ -25,15 +22,15 @@ func (e Endpoint) String() string {
 }
 
 func NewServer(
-	connG IConnGenerator,
+	generator IChannelGenerator,
 	pcodec IPacketCodec,
 	mcodec IMsgCodec,
 ) IServer {
 	s := &FireServer{
-		connG:   connG,
-		pcodec:  pcodec,
-		mcodec:  mcodec,
-		routers: make(map[string]IHandler),
+		generator: generator,
+		mcodec:    mcodec,
+		pcodec:    pcodec,
+		routers:   make(map[string]IHandler),
 	}
 
 	return s
@@ -42,14 +39,17 @@ func NewServer(
 func (s *FireServer) Listen() error {
 	log.Println("server listening...")
 	for {
-		c, err := s.connG.Gen()
+		ch, err := s.generator.Gen()
 		if err != nil {
-			return err
+			log.Println(err)
+			break
 		}
 
-		stream := NewServerStream(c, s)
+		stream := NewServerTransport(ch, s)
 		go stream.Flow()
 	}
+
+	return nil
 }
 
 func (s *FireServer) RegistAction(action string, handler IHandler) {

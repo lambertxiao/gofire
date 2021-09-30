@@ -1,28 +1,33 @@
 package main
 
 import (
+	"gofire/core"
 	gofire "gofire/core"
 	"gofire/example/proto"
 	"gofire/generator"
 	"log"
 )
 
-func main() {
-	endpoint := gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
-	generator := generator.NewTCPClientConnGenerator(endpoint)
-	// generator, err := generator.NewUDPClientConnGenerator(endpoint)
-	// if err != nil {
-	// 	panic(err)
-	// }
+var endpoint gofire.Endpoint
+var gen gofire.IChannelGenerator
+var pcodec gofire.IPacketCodec
+var mcodec gofire.IMsgCodec
 
-	pcodec := gofire.NewPacketCodec()
-	mcodec := proto.NewCustomMsgCodec()
-	client := gofire.NewClient(
-		endpoint.String(),
-		generator,
-		pcodec,
-		mcodec,
-	)
+func init() {
+	endpoint = gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
+	gen = generator.NewTCPClientConnGenerator(endpoint)
+	pcodec = gofire.NewPacketCodec(core.TransProtocol{Name: 1, Version: 1})
+	mcodec = proto.NewCustomMsgCodec()
+}
+
+func main() {
+	ch, err := gen.Gen()
+	if err != nil {
+		panic(err)
+	}
+
+	transport := gofire.NewTransport(ch, pcodec, mcodec)
+	client := gofire.NewClient(transport)
 	helloMsg := &proto.Message{
 		Head: proto.MessageHead{
 			MsgId:  "0000-0000-0000-0001",

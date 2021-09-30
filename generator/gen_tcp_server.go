@@ -9,7 +9,7 @@ type TCPServerConnGenerator struct {
 	listener *net.TCPListener
 }
 
-func NewTCPServerConnGenerator(endpoint core.Endpoint) (core.IConnGenerator, error) {
+func NewTCPServerConnGenerator(endpoint core.Endpoint) (core.IChannelGenerator, error) {
 	g := &TCPServerConnGenerator{}
 	addr, err := net.ResolveTCPAddr("tcp4", endpoint.String())
 	if err != nil {
@@ -25,7 +25,7 @@ func NewTCPServerConnGenerator(endpoint core.Endpoint) (core.IConnGenerator, err
 	return g, nil
 }
 
-func (g *TCPServerConnGenerator) Gen() (core.IConn, error) {
+func (g *TCPServerConnGenerator) Gen() (core.IChannel, error) {
 	conn, err := g.listener.AcceptTCP()
 	if err != nil {
 		return nil, err
