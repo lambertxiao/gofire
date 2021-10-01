@@ -11,21 +11,19 @@ import (
 var defaultTimeout = 2 * time.Second
 
 type FireClient struct {
-	transport   ITransport
-	mq          IMsgQueue
-	timeout     time.Duration
-	ssmPool     *sync.Map
-	checkTicker *time.Ticker
+	transport ITransport
+	mq        IMsgQueue
+	timeout   time.Duration
+	ssmPool   *sync.Map
 }
 
 func NewClient(
 	transport ITransport,
 ) IClient {
 	c := &FireClient{
-		transport:   transport,
-		mq:          NewMsgQueue(128),
-		checkTicker: time.NewTicker(time.Millisecond * 10),
-		ssmPool:     &sync.Map{},
+		transport: transport,
+		mq:        NewMsgQueue(128),
+		ssmPool:   &sync.Map{},
 	}
 
 	go c.loop()
@@ -75,7 +73,6 @@ func (c *FireClient) loop() {
 		case <-ch:
 			cancel()
 		}
-		<-c.checkTicker.C
 	}
 }
 

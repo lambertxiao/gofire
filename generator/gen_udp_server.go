@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"fmt"
 	"gofire/core"
 	"net"
 )
@@ -27,7 +26,6 @@ func (c *WrapUDPConn) Read(b []byte) (int, error) {
 }
 
 func (c *WrapUDPConn) Write(b []byte) (int, error) {
-	fmt.Println(c.addr)
 	return c.UDPConn.WriteToUDP(b, c.addr)
 }
 

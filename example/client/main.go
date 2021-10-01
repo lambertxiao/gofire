@@ -16,8 +16,8 @@ var mcodec gofire.IMsgCodec
 
 func init() {
 	endpoint = gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
-	_gen, err := generator.NewTCPClientConnGenerator(endpoint)
-	// _gen, err := generator.NewUDPClientConnGenerator(endpoint)
+	// _gen, err := generator.NewTCPClientConnGenerator(endpoint)
+	_gen, err := generator.NewUDPClientConnGenerator(endpoint)
 	if err != nil {
 		panic(err)
 	}
