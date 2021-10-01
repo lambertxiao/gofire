@@ -3,17 +3,17 @@ package proto
 import "encoding/json"
 
 type Message struct {
-	Head MessageHead
-	Body map[string]interface{}
-}
-
-type MessageHead struct {
 	MsgId  string
 	Action string
+	Body   map[string]interface{}
+}
+
+func (m *Message) GetID() string {
+	return m.MsgId
 }
 
 func (m *Message) GetAction() string {
-	return m.Head.Action
+	return m.Action
 }
 
 func (m *Message) Serialize() ([]byte, error) {

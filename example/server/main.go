@@ -13,8 +13,8 @@ var mcodec gofire.IMsgCodec
 
 func init() {
 	endpoint = gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
-	// sgen, err := generator.NewTCPServerConnGenerator(endpoint)
-	sgen, err := generator.NewUDPServerConnGenerator(endpoint)
+	sgen, err := generator.NewTCPServerConnGenerator(endpoint)
+	// sgen, err := generator.NewUDPServerConnGenerator(endpoint)
 	if err != nil {
 		panic(err)
 	}
@@ -41,10 +41,8 @@ type FooHandler struct{}
 
 func (h *FooHandler) Do(req gofire.Request) {
 	msg := &proto.Message{
-		Head: proto.MessageHead{
-			MsgId:  "0000-0000-0000-0001",
-			Action: "hello-resp",
-		},
+		MsgId:  req.Msg.GetAction(),
+		Action: "hello-resp",
 		Body: map[string]interface{}{
 			"name": "bar",
 		},

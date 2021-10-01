@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	gofire "gofire/core"
 	"gofire/example/proto"
 	"gofire/generator"
 	"log"
+	"sync"
 )
 
 var endpoint gofire.Endpoint
@@ -14,8 +16,8 @@ var mcodec gofire.IMsgCodec
 
 func init() {
 	endpoint = gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
-	// gen = generator.NewTCPClientConnGenerator(endpoint)
-	_gen, err := generator.NewUDPClientConnGenerator(endpoint)
+	_gen, err := generator.NewTCPClientConnGenerator(endpoint)
+	// _gen, err := generator.NewUDPClientConnGenerator(endpoint)
 	if err != nil {
 		panic(err)
 	}
@@ -33,20 +35,29 @@ func main() {
 
 	transport := gofire.NewTransport(ch, pcodec, mcodec)
 	client := gofire.NewClient(transport)
-	helloMsg := &proto.Message{
-		Head: proto.MessageHead{
-			MsgId:  "0000-0000-0000-0001",
-			Action: "hello",
-		},
-		Body: map[string]interface{}{
-			"name": "foo",
-		},
+
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func(i int) {
+			log.Println("send req id: ", i)
+			helloMsg := &proto.Message{
+				MsgId:  fmt.Sprintf("%d", i),
+				Action: "hello",
+				Body: map[string]interface{}{
+					"name": "foo",
+				},
+			}
+
+			resp, err := client.Send(helloMsg)
+			if err != nil {
+				panic(err)
+			}
+
+			log.Println(resp)
+			wg.Done()
+		}(i)
 	}
 
-	resp, err := client.Send(helloMsg)
-	if err != nil {
-		panic(err)
-	}
-
-	log.Println(resp)
+	wg.Wait()
 }

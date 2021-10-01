@@ -38,6 +38,7 @@ type IHandler interface {
 }
 
 type IMsg interface {
+	GetID() string
 	GetAction() string
 	Serialize() ([]byte, error)
 	Unserialize([]byte) error
@@ -55,15 +56,8 @@ type IPacket interface {
 }
 
 type IPacketCodec interface {
-	// 将数据写入io流
 	Encode(payload []byte, w io.Writer) error
 	Decode(r io.Reader) ([]byte, error)
-}
-
-type IProto interface {
-	// 每种协议的head长度都是固定的
-	GetHeadLen() uint32
-	GetPayloadSize(head []byte) uint32
 }
 
 type ISTransport interface {
@@ -73,7 +67,6 @@ type ISTransport interface {
 	WriteLoop()
 }
 
-// transport负责管理所有的stream
 type ITransport interface {
 	RoundTrip(msg IMsg) (IMsg, error)
 }
