@@ -1,17 +1,11 @@
 package core
 
-import (
-	"context"
-)
-
 type Transport struct {
 	// 传输通道
 	ch IChannel
 	// 传输包编解码器
 	pcodec IPacketCodec
 	mcodec IMsgCodec
-
-	ctx context.Context
 }
 
 func NewTransport(ch IChannel, pcodec IPacketCodec, mcodec IMsgCodec) ITransport {

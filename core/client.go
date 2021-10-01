@@ -3,40 +3,86 @@ package core
 import (
 	"context"
 	"errors"
+	"log"
+	"sync"
 	"time"
 )
 
+var defaultTimeout = 2 * time.Second
+
 type FireClient struct {
-	transport ITransport
+	transport   ITransport
+	mq          IMsgQueue
+	timeout     time.Duration
+	ssmPool     *sync.Map
+	checkTicker *time.Ticker
 }
 
 func NewClient(
 	transport ITransport,
 ) IClient {
 	c := &FireClient{
-		transport: transport,
+		transport:   transport,
+		mq:          NewMsgQueue(128),
+		checkTicker: time.NewTicker(time.Millisecond * 10),
+		ssmPool:     &sync.Map{},
 	}
 
+	go c.loop()
 	return c
 }
 
-func (c *FireClient) Send(msg IMsg) (IMsg, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+func (c *FireClient) SetTimeout(timeout time.Duration) {
+	c.timeout = timeout
+}
 
-	ch := make(chan bool)
-	var ret IMsg
-	var err error
-
-	go func() {
-		ret, err = c.transport.RoundTrip(msg)
-		ch <- true
-	}()
-
-	select {
-	case <-ctx.Done():
-		return nil, errors.New("send time out")
-	case <-ch:
-		return ret, err
+func (c *FireClient) getTimeout() time.Duration {
+	if c.timeout == 0 {
+		return defaultTimeout
 	}
+
+	return c.timeout
+}
+
+func (c *FireClient) loop() {
+	for {
+		msg := c.mq.Pop()
+		ctx, cancel := context.WithTimeout(context.Background(), c.getTimeout())
+		ch := make(chan bool)
+
+		_ssm, ok := c.ssmPool.Load(msg.GetID())
+		if !ok {
+			log.Println("cannot find ssm for msg:", msg.GetID())
+			continue
+		}
+		ssm := _ssm.(*MsgSSM)
+
+		go func() {
+			ret, err := c.transport.RoundTrip(msg)
+			if err != nil {
+				log.Println("transport roundtrip msg failed")
+				return
+			}
+
+			ssm.Err = err
+			ssm.Resp = ret
+			ssm.Done()
+		}()
+
+		select {
+		case <-ctx.Done():
+			ssm.Err = errors.New("send time out")
+		case <-ch:
+			cancel()
+		}
+		<-c.checkTicker.C
+	}
+}
+
+func (c *FireClient) Send(msg IMsg) (IMsg, error) {
+	ssm := NewMsgSSM()
+	c.mq.Push(msg)
+	ssm.Go()
+	c.ssmPool.Store(msg.GetID(), ssm)
+	return ssm.Return()
 }

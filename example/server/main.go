@@ -41,7 +41,7 @@ type FooHandler struct{}
 
 func (h *FooHandler) Do(req gofire.Request) {
 	msg := &proto.Message{
-		MsgId:  req.Msg.GetAction(),
+		MsgId:  req.Msg.GetID(),
 		Action: "hello-resp",
 		Body: map[string]interface{}{
 			"name": "bar",

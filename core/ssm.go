@@ -7,6 +7,7 @@ import (
 type MsgSSM struct {
 	sync.WaitGroup
 	Resp IMsg
+	Err  error
 }
 
 func NewMsgSSM() *MsgSSM {
@@ -14,7 +15,15 @@ func NewMsgSSM() *MsgSSM {
 	return m
 }
 
-func (m *MsgSSM) Return() IMsg {
+func (m *MsgSSM) Go() {
+	m.Add(1)
+}
+
+func (m *MsgSSM) Done() {
+	m.WaitGroup.Done()
+}
+
+func (m *MsgSSM) Return() (IMsg, error) {
 	m.WaitGroup.Wait()
-	return m.Resp
+	return m.Resp, nil
 }

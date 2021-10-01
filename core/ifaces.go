@@ -70,3 +70,8 @@ type ISTransport interface {
 type ITransport interface {
 	RoundTrip(msg IMsg) (IMsg, error)
 }
+
+type IMsgQueue interface {
+	Push(msg IMsg)
+	Pop() IMsg
+}

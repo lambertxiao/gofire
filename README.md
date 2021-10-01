@@ -54,3 +54,5 @@ func initServer() {
     server.Listen()
 }
 ```
+
+// 1. 要想ch被复用，则可以将消息排队执行
