@@ -68,6 +68,7 @@ type ISTransport interface {
 }
 
 type ITransport interface {
+	Flow()
 	RoundTrip(msg IMsg) (IMsg, error)
 }
 

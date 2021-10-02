@@ -8,10 +8,13 @@ type MsgSSM struct {
 	sync.WaitGroup
 	Resp IMsg
 	Err  error
+	ch   chan IMsg
 }
 
 func NewMsgSSM() *MsgSSM {
-	m := &MsgSSM{}
+	m := &MsgSSM{
+		ch: make(chan IMsg),
+	}
 	return m
 }
 
@@ -21,6 +24,10 @@ func (m *MsgSSM) Go() {
 
 func (m *MsgSSM) Done() {
 	m.WaitGroup.Done()
+}
+
+func (m *MsgSSM) WaitDone() {
+
 }
 
 func (m *MsgSSM) Return() (IMsg, error) {

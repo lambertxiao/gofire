@@ -37,7 +37,7 @@ func main() {
 	client := gofire.NewClient(transport)
 
 	var wg sync.WaitGroup
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 1000; i++ {
 		wg.Add(1)
 		go func(i int) {
 			log.Println("send req id: ", i)
