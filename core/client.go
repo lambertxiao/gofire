@@ -2,12 +2,12 @@ package core
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"sync"
 	"time"
 )
 
-var defaultTimeout = 2 * time.Second
+var defaultTimeout = 6 * time.Second
 
 type FireClient struct {
 	transport ITransport
@@ -41,40 +41,6 @@ func (c *FireClient) getTimeout() time.Duration {
 	return c.timeout
 }
 
-// func (c *FireClient) loop() {
-// 	for {
-// 		msg := c.mq.Pop()
-// 		ctx, cancel := context.WithTimeout(context.Background(), c.getTimeout())
-// 		ch := make(chan bool)
-
-// 		_ssm, ok := c.ssmPool.Load(msg.GetID())
-// 		if !ok {
-// 			log.Println("cannot find ssm for msg:", msg.GetID())
-// 			continue
-// 		}
-// 		ssm := _ssm.(*MsgSSM)
-
-// 		go func() {
-// 			ret, err := c.transport.RoundTrip(msg)
-// 			if err != nil {
-// 				log.Println("transport roundtrip msg failed")
-// 				return
-// 			}
-
-// 			ssm.Err = err
-// 			ssm.Resp = ret
-// 			ssm.Done()
-// 		}()
-
-// 		select {
-// 		case <-ctx.Done():
-// 			ssm.Err = errors.New("send time out")
-// 		case <-ch:
-// 			cancel()
-// 		}
-// 	}
-// }
-
 func (c *FireClient) Send(msg IMsg) (ret IMsg, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), c.getTimeout())
 	defer cancel()
@@ -86,7 +52,7 @@ func (c *FireClient) Send(msg IMsg) (ret IMsg, err error) {
 
 	select {
 	case <-ctx.Done():
-		return nil, errors.New("send time out")
+		return nil, fmt.Errorf("msg id %s send time out", msg.GetID())
 	case <-ch:
 		return ret, err
 	}

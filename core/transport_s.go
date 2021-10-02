@@ -77,7 +77,7 @@ func (t *ServerTransport) WriteLoop() {
 		case <-t.ctx.Done():
 			return
 		case msg := <-t.msgChannel:
-			log.Println("write msg ....", msg)
+			log.Println("server receive msg:", msg)
 			msgData, err := t.server.mcodec.Encode(msg)
 			if err != nil {
 				log.Println("mcodec encode msg error", err)
@@ -89,13 +89,10 @@ func (t *ServerTransport) WriteLoop() {
 				log.Println("pcodec encode msg error", err)
 				continue
 			}
-
-			log.Println("write done")
 		}
 	}
 }
 
 func (t *ServerTransport) Write(msg IMsg) {
-	log.Println("server write msg to channel")
 	t.msgChannel <- msg
 }

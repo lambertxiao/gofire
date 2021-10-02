@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
 	gofire "gofire/core"
 	"gofire/example/proto"
 	"gofire/generator"
 	"log"
 	"sync"
+
+	"github.com/gofrs/uuid"
 )
 
 var endpoint gofire.Endpoint
@@ -16,8 +17,8 @@ var mcodec gofire.IMsgCodec
 
 func init() {
 	endpoint = gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
-	// _gen, err := generator.NewTCPClientConnGenerator(endpoint)
-	_gen, err := generator.NewUDPClientConnGenerator(endpoint)
+	_gen, err := generator.NewTCPClientConnGenerator(endpoint)
+	// _gen, err := generator.NewUDPClientConnGenerator(endpoint)
 	if err != nil {
 		panic(err)
 	}
@@ -37,12 +38,12 @@ func main() {
 	client := gofire.NewClient(transport)
 
 	var wg sync.WaitGroup
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 10000; i++ {
 		wg.Add(1)
 		go func(i int) {
-			log.Println("send req id: ", i)
+			id, _ := uuid.NewV4()
 			helloMsg := &proto.Message{
-				MsgId:  fmt.Sprintf("%d", i),
+				MsgId:  id.String(),
 				Action: "hello",
 				Body: map[string]interface{}{
 					"name": "foo",
@@ -51,7 +52,8 @@ func main() {
 
 			resp, err := client.Send(helloMsg)
 			if err != nil {
-				panic(err)
+				log.Println(err)
+				return
 			}
 
 			log.Println(resp)

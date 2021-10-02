@@ -4,6 +4,7 @@ import (
 	gofire "gofire/core"
 	"gofire/example/proto"
 	"gofire/generator"
+	"time"
 )
 
 var endpoint gofire.Endpoint
@@ -13,8 +14,8 @@ var mcodec gofire.IMsgCodec
 
 func init() {
 	endpoint = gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
-	// sgen, err := generator.NewTCPServerConnGenerator(endpoint)
-	sgen, err := generator.NewUDPServerConnGenerator(endpoint)
+	sgen, err := generator.NewTCPServerConnGenerator(endpoint)
+	// sgen, err := generator.NewUDPServerConnGenerator(endpoint)
 	if err != nil {
 		panic(err)
 	}
@@ -46,6 +47,10 @@ func (h *FooHandler) Do(req gofire.Request) {
 		Body: map[string]interface{}{
 			"name": "bar",
 		},
+	}
+
+	if req.Msg.GetID() == "1" {
+		time.Sleep(2 * time.Second)
 	}
 
 	req.Stream.Write(msg)
