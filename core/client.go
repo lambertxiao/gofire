@@ -9,31 +9,50 @@ import (
 
 var defaultTimeout = 6 * time.Second
 
-type FireClient struct {
-	transport ITransport
-	mq        IMsgQueue
-	timeout   time.Duration
-	ssmPool   *sync.Map
+type DefaultClient struct {
+	cg      ConnGenerator
+	mq      MsgQueue
+	pcodec  IPacketCodec
+	mcodec  MsgCodec
+	timeout time.Duration
+	ssmPool *sync.Map
+	// 通过client统计超时的消息，在超时达到一定阈值时，会尝试建立新的链接
+	maxConnCnt int
+	transports []ClientTransport
 }
 
 func NewClient(
-	transport ITransport,
-) IClient {
-	c := &FireClient{
-		transport: transport,
-		mq:        NewMsgQueue(128),
-		ssmPool:   &sync.Map{},
+	cg ConnGenerator,
+	pcodec IPacketCodec,
+	mcodec MsgCodec,
+	mq MsgQueue,
+	maxConnCnt int,
+) (Client, error) {
+	c := &DefaultClient{
+		cg:         cg,
+		mq:         mq,
+		pcodec:     pcodec,
+		mcodec:     mcodec,
+		ssmPool:    &sync.Map{},
+		maxConnCnt: maxConnCnt,
+		transports: []ClientTransport{},
 	}
 
-	transport.Flow()
-	return c
+	conn, err := cg.Gen()
+	if err != nil {
+		return nil, err
+	}
+
+	tp := NewClientTransport(conn, c.pcodec, c.mcodec)
+	c.transports = append(c.transports, tp)
+	return c, nil
 }
 
-func (c *FireClient) SetTimeout(timeout time.Duration) {
+func (c *DefaultClient) SetTimeout(timeout time.Duration) {
 	c.timeout = timeout
 }
 
-func (c *FireClient) getTimeout() time.Duration {
+func (c *DefaultClient) getTimeout() time.Duration {
 	if c.timeout == 0 {
 		return defaultTimeout
 	}
@@ -41,12 +60,21 @@ func (c *FireClient) getTimeout() time.Duration {
 	return c.timeout
 }
 
-func (c *FireClient) Send(msg IMsg) (ret IMsg, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), c.getTimeout())
+func (c *DefaultClient) selectTransport() ClientTransport {
+	return c.transports[0]
+}
+
+func (c *DefaultClient) SyncSend(msg Msg) (ret Msg, err error) {
+	timeout := msg.GetTimeout()
+	if timeout == 0 {
+		timeout = c.getTimeout()
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	ch := make(chan bool)
 	go func() {
-		ret, err = c.transport.RoundTrip(msg)
+		ret, err = c.selectTransport().RoundTrip(msg)
 		ch <- true
 	}()
 
@@ -56,4 +84,13 @@ func (c *FireClient) Send(msg IMsg) (ret IMsg, err error) {
 	case <-ch:
 		return ret, err
 	}
+}
+
+func (c *DefaultClient) AsyncSend(msg Msg, cb MsgCB) error {
+	go func() {
+		ret, err := c.selectTransport().RoundTrip(msg)
+		cb(ret, err)
+	}()
+
+	return nil
 }

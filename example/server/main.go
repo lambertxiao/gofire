@@ -8,9 +8,9 @@ import (
 )
 
 var endpoint gofire.Endpoint
-var gen gofire.IChannelGenerator
+var gen gofire.ConnGenerator
 var pcodec gofire.IPacketCodec
-var mcodec gofire.IMsgCodec
+var mcodec gofire.MsgCodec
 
 func init() {
 	endpoint = gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}

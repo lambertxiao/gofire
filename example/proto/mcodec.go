@@ -6,12 +6,12 @@ import (
 
 type CustomMsgCodec struct{}
 
-func NewCustomMsgCodec() core.IMsgCodec {
+func NewCustomMsgCodec() core.MsgCodec {
 	c := &CustomMsgCodec{}
 	return c
 }
 
-func (c *CustomMsgCodec) Encode(msg core.IMsg) ([]byte, error) {
+func (c *CustomMsgCodec) Encode(msg core.Msg) ([]byte, error) {
 	payload, err := msg.Serialize()
 	if err != nil {
 		return payload, err
@@ -20,7 +20,7 @@ func (c *CustomMsgCodec) Encode(msg core.IMsg) ([]byte, error) {
 	return payload, nil
 }
 
-func (c *CustomMsgCodec) Decode(payload []byte) (core.IMsg, error) {
+func (c *CustomMsgCodec) Decode(payload []byte) (core.Msg, error) {
 	msg := new(Message)
 	err := msg.Unserialize(payload)
 	if err != nil {

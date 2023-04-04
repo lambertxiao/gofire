@@ -1,6 +1,9 @@
 package proto
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Message struct {
 	MsgId  string
@@ -22,4 +25,12 @@ func (m *Message) Serialize() ([]byte, error) {
 
 func (m *Message) Unserialize(data []byte) error {
 	return json.Unmarshal(data, m)
+}
+
+func (m *Message) GetTimeout() time.Duration {
+	return 5 * time.Second
+}
+
+func (m *Message) GetPriority() int {
+	return 0
 }

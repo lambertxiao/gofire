@@ -10,32 +10,18 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-var endpoint gofire.Endpoint
-var gen gofire.IChannelGenerator
-var pcodec gofire.IPacketCodec
-var mcodec gofire.IMsgCodec
-
-func init() {
-	endpoint = gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
-	_gen, err := generator.NewTCPClientConnGenerator(endpoint)
-	// _gen, err := generator.NewUDPClientConnGenerator(endpoint)
-	if err != nil {
-		panic(err)
-	}
-
-	gen = _gen
-	pcodec = gofire.NewPacketCodec(gofire.TransProtocol{Name: 1, Version: 1})
-	mcodec = proto.NewCustomMsgCodec()
-}
-
 func main() {
-	ch, err := gen.Gen()
+	endpoint := gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
+	client, err := gofire.NewClient(
+		generator.NewTCPClientConnGenerator(endpoint),
+		gofire.NewPacketCodec(gofire.TransProtocol{Name: 1, Version: 1}),
+		proto.NewCustomMsgCodec(),
+		gofire.NewDefaultMsgQueue(100),
+		10,
+	)
 	if err != nil {
 		panic(err)
 	}
-
-	transport := gofire.NewTransport(ch, pcodec, mcodec)
-	client := gofire.NewClient(transport)
 
 	var wg sync.WaitGroup
 	for i := 0; i < 10000; i++ {
@@ -50,7 +36,7 @@ func main() {
 				},
 			}
 
-			resp, err := client.Send(helloMsg)
+			resp, err := client.SyncSend(helloMsg)
 			if err != nil {
 				log.Println(err)
 				return

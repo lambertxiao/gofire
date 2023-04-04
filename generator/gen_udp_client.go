@@ -9,7 +9,7 @@ type UDPClientConnGenerator struct {
 	addr *net.UDPAddr
 }
 
-func NewUDPClientConnGenerator(endpoint core.Endpoint) (core.IChannelGenerator, error) {
+func NewUDPClientConnGenerator(endpoint core.Endpoint) (core.ConnGenerator, error) {
 	g := &UDPClientConnGenerator{}
 	addr, err := net.ResolveUDPAddr("udp4", endpoint.String())
 	if err != nil {
@@ -20,7 +20,7 @@ func NewUDPClientConnGenerator(endpoint core.Endpoint) (core.IChannelGenerator, 
 	return g, nil
 }
 
-func (g *UDPClientConnGenerator) Gen() (core.IChannel, error) {
+func (g *UDPClientConnGenerator) Gen() (core.Conn, error) {
 	conn, err := net.DialUDP("udp4", nil, g.addr)
 	if err != nil {
 		return nil, err

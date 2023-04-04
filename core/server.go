@@ -6,10 +6,10 @@ import (
 )
 
 type FireServer struct {
-	generator IChannelGenerator
-	mcodec    IMsgCodec
+	generator ConnGenerator
+	mcodec    MsgCodec
 	pcodec    IPacketCodec
-	routers   map[string]IHandler
+	routers   map[string]Handler
 }
 
 type Endpoint struct {
@@ -22,15 +22,15 @@ func (e Endpoint) String() string {
 }
 
 func NewServer(
-	generator IChannelGenerator,
+	generator ConnGenerator,
 	pcodec IPacketCodec,
-	mcodec IMsgCodec,
+	mcodec MsgCodec,
 ) IServer {
 	s := &FireServer{
 		generator: generator,
 		mcodec:    mcodec,
 		pcodec:    pcodec,
-		routers:   make(map[string]IHandler),
+		routers:   make(map[string]Handler),
 	}
 
 	return s
@@ -53,12 +53,12 @@ func (s *FireServer) Listen() error {
 	return nil
 }
 
-func (s *FireServer) RegistAction(action string, handler IHandler) {
+func (s *FireServer) RegistAction(action string, handler Handler) {
 	log.Println("regist action id", action)
 	s.routers[action] = handler
 }
 
-func (s *FireServer) GetHandler(action string) IHandler {
+func (s *FireServer) GetHandler(action string) Handler {
 	h, exist := s.routers[action]
 	if !exist {
 		return nil

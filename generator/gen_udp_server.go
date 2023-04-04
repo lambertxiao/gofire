@@ -29,7 +29,7 @@ func (c *WrapUDPConn) Write(b []byte) (int, error) {
 	return c.UDPConn.WriteToUDP(b, c.addr)
 }
 
-func NewUDPServerConnGenerator(endpoint core.Endpoint) (core.IChannelGenerator, error) {
+func NewUDPServerConnGenerator(endpoint core.Endpoint) (core.ConnGenerator, error) {
 	g := &UDPServerConnGenerator{
 		ch: make(chan bool, 1),
 	}
@@ -48,7 +48,7 @@ func NewUDPServerConnGenerator(endpoint core.Endpoint) (core.IChannelGenerator, 
 	return g, nil
 }
 
-func (g *UDPServerConnGenerator) Gen() (core.IChannel, error) {
+func (g *UDPServerConnGenerator) Gen() (core.Conn, error) {
 	g.ch <- true
 	return g.conn, nil
 }

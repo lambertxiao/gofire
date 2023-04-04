@@ -6,21 +6,21 @@ import (
 )
 
 type ServerTransport struct {
-	ch         IChannel
+	ch         Conn
 	server     *FireServer
 	ctx        context.Context
 	cancel     context.CancelFunc
-	msgChannel chan IMsg
+	msgChannel chan Msg
 }
 
-func NewServerTransport(ch IChannel, server *FireServer) ISTransport {
+func NewServerTransport(ch Conn, server *FireServer) ISTransport {
 	ctx, cancel := context.WithCancel(context.Background())
 	s := &ServerTransport{
 		ch:         ch,
 		server:     server,
 		ctx:        ctx,
 		cancel:     cancel,
-		msgChannel: make(chan IMsg),
+		msgChannel: make(chan Msg),
 	}
 	return s
 }
@@ -93,6 +93,6 @@ func (t *ServerTransport) WriteLoop() {
 	}
 }
 
-func (t *ServerTransport) Write(msg IMsg) {
+func (t *ServerTransport) Write(msg Msg) {
 	t.msgChannel <- msg
 }

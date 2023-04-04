@@ -1,58 +1,56 @@
 package core
 
-import "io"
+import (
+	"io"
+	"time"
+)
 
-type IClient interface {
-	Send(IMsg) (IMsg, error)
+type MsgCB func(msg Msg, err error)
+
+type Client interface {
+	SyncSend(Msg) (Msg, error)
+	AsyncSend(Msg, MsgCB) error
 }
 
 type IServer interface {
-	RegistAction(action string, handler IHandler)
-	GetHandler(action string) IHandler
+	RegistAction(action string, handler Handler)
+	GetHandler(action string) Handler
 	Listen() error
 }
 
-type IChannel interface {
+type Conn interface {
 	io.ReadWriteCloser
 }
 
-type IChannelGenerator interface {
-	Gen() (IChannel, error)
+type ConnGenerator interface {
+	Gen() (Conn, error)
 }
 
-type IMsgGenerator interface {
-	Gen() IMsg
-}
-
-type IChannelPool interface {
-	PutConn(conn IChannel)
+type ConnPool interface {
+	PutConn(conn Conn)
 }
 
 type Request struct {
 	Stream ISTransport
-	Msg    IMsg
+	Msg    Msg
 }
 
-type IHandler interface {
+type Handler interface {
 	Do(req Request)
 }
 
-type IMsg interface {
+type Msg interface {
 	GetID() string
 	GetAction() string
 	Serialize() ([]byte, error)
 	Unserialize([]byte) error
+	GetTimeout() time.Duration
+	GetPriority() int
 }
 
-type IMsgCodec interface {
-	Encode(msg IMsg) ([]byte, error)
-	Decode(payload []byte) (IMsg, error)
-}
-
-type IPacket interface {
-	GetHeadLength() uint32
-	UnPackHeadData(data []byte) error
-	UnPackPayload(data []byte)
+type MsgCodec interface {
+	Encode(msg Msg) ([]byte, error)
+	Decode(payload []byte) (Msg, error)
 }
 
 type IPacketCodec interface {
@@ -62,17 +60,17 @@ type IPacketCodec interface {
 
 type ISTransport interface {
 	Flow()
-	Write(msg IMsg)
+	Write(msg Msg)
 	ReadLoop()
 	WriteLoop()
 }
 
-type ITransport interface {
-	Flow()
-	RoundTrip(msg IMsg) (IMsg, error)
+type ClientTransport interface {
+	// Open()
+	RoundTrip(msg Msg) (Msg, error)
 }
 
-type IMsgQueue interface {
-	Push(msg IMsg)
-	Pop() IMsg
+type MsgQueue interface {
+	Push(msg Msg)
+	Pop() Msg
 }
