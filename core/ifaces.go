@@ -5,16 +5,19 @@ import (
 	"time"
 )
 
-type MsgCB func(msg Msg, err error)
+type MsgCallback interface {
+	Success(msg Msg)
+	Timeout(msg Msg)
+}
+
+type MsgRecvCallback func(tp Transport, msg Msg)
 
 type Client interface {
 	SyncSend(Msg) (Msg, error)
-	AsyncSend(Msg, MsgCB) error
+	AsyncSend(Msg, MsgCallback) error
 }
 
-type IServer interface {
-	RegistAction(action string, handler Handler)
-	GetHandler(action string) Handler
+type Server interface {
 	Listen() error
 }
 
@@ -30,20 +33,9 @@ type ConnPool interface {
 	PutConn(conn Conn)
 }
 
-type Request struct {
-	Stream ISTransport
-	Msg    Msg
-}
-
-type Handler interface {
-	Do(req Request)
-}
-
 type Msg interface {
 	GetID() string
-	GetAction() string
-	Serialize() ([]byte, error)
-	Unserialize([]byte) error
+	GetPayload() []byte
 	GetTimeout() time.Duration
 	GetPriority() int
 }
@@ -53,21 +45,17 @@ type MsgCodec interface {
 	Decode(payload []byte) (Msg, error)
 }
 
-type IPacketCodec interface {
+type PacketCodec interface {
 	Encode(payload []byte, w io.Writer) error
 	Decode(r io.Reader) ([]byte, error)
 }
 
-type ISTransport interface {
-	Flow()
-	Write(msg Msg)
-	ReadLoop()
-	WriteLoop()
-}
-
-type ClientTransport interface {
-	// Open()
-	RoundTrip(msg Msg) (Msg, error)
+// 消息传输站
+type Transport interface {
+	Open()
+	SendMsg(msg Msg) error
+	SetMsgCB(cb MsgRecvCallback)
+	IsActive() bool
 }
 
 type MsgQueue interface {

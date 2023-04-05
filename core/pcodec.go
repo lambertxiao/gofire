@@ -16,18 +16,18 @@ type TransHeader struct {
 	ContentLength uint32
 }
 
-type PacketCodec struct {
+type DefaultPacketCodec struct {
 	tp TransProtocol
 }
 
-func NewPacketCodec(tp TransProtocol) IPacketCodec {
-	c := &PacketCodec{
+func NewPacketCodec(tp TransProtocol) PacketCodec {
+	c := &DefaultPacketCodec{
 		tp: tp,
 	}
 	return c
 }
 
-func (c *PacketCodec) Encode(payload []byte, w io.Writer) error {
+func (c *DefaultPacketCodec) Encode(payload []byte, w io.Writer) error {
 	var err error
 	if err = binary.Write(w, binary.LittleEndian, c.tp.Name); err != nil {
 		return err
@@ -49,7 +49,7 @@ func (c *PacketCodec) Encode(payload []byte, w io.Writer) error {
 	return nil
 }
 
-func (c *PacketCodec) Decode(r io.Reader) ([]byte, error) {
+func (c *DefaultPacketCodec) Decode(r io.Reader) ([]byte, error) {
 	th := &TransHeader{}
 	if err := binary.Read(r, binary.LittleEndian, &th.Name); err != nil {
 		return nil, err

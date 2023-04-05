@@ -1,68 +1,50 @@
 package core
 
 import (
-	"fmt"
-	"log"
+	"github.com/sirupsen/logrus"
 )
 
-type FireServer struct {
-	generator ConnGenerator
-	mcodec    MsgCodec
-	pcodec    IPacketCodec
-	routers   map[string]Handler
+func init() {
+	logrus.SetReportCaller(true)
 }
 
-type Endpoint struct {
-	Ip   string
-	Port int
-}
-
-func (e Endpoint) String() string {
-	return fmt.Sprintf("%s:%d", e.Ip, e.Port)
+type DefaultServer struct {
+	cg     ConnGenerator
+	mcodec MsgCodec
+	pcodec PacketCodec
+	cb     MsgRecvCallback
 }
 
 func NewServer(
-	generator ConnGenerator,
-	pcodec IPacketCodec,
+	cg ConnGenerator,
+	pcodec PacketCodec,
 	mcodec MsgCodec,
-) IServer {
-	s := &FireServer{
-		generator: generator,
-		mcodec:    mcodec,
-		pcodec:    pcodec,
-		routers:   make(map[string]Handler),
+	cb MsgRecvCallback,
+) Server {
+	s := &DefaultServer{
+		cg:     cg,
+		mcodec: mcodec,
+		pcodec: pcodec,
+		cb:     cb,
 	}
 
 	return s
 }
 
-func (s *FireServer) Listen() error {
-	log.Println("server listening...")
+func (s *DefaultServer) Listen() error {
+	logrus.Info("server listening...")
 	for {
-		ch, err := s.generator.Gen()
-		log.Println("get channel from generator")
+		conn, err := s.cg.Gen()
+		logrus.Info("get conn from generator")
 		if err != nil {
-			log.Println(err)
+			logrus.Info(err)
 			break
 		}
 
-		stream := NewServerTransport(ch, s)
-		go stream.Flow()
+		tp := NewTransport(conn, s.pcodec, s.mcodec)
+		tp.SetMsgCB(s.cb)
+		go tp.Open()
 	}
 
 	return nil
-}
-
-func (s *FireServer) RegistAction(action string, handler Handler) {
-	log.Println("regist action id", action)
-	s.routers[action] = handler
-}
-
-func (s *FireServer) GetHandler(action string) Handler {
-	h, exist := s.routers[action]
-	if !exist {
-		return nil
-	}
-
-	return h
 }

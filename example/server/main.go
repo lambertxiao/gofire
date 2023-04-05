@@ -4,54 +4,37 @@ import (
 	gofire "gofire/core"
 	"gofire/example/proto"
 	"gofire/generator"
-	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
-var endpoint gofire.Endpoint
-var gen gofire.ConnGenerator
-var pcodec gofire.IPacketCodec
-var mcodec gofire.MsgCodec
-
-func init() {
-	endpoint = gofire.Endpoint{Ip: "127.0.0.1", Port: 7777}
-	sgen, err := generator.NewTCPServerConnGenerator(endpoint)
-	// sgen, err := generator.NewUDPServerConnGenerator(endpoint)
+func main() {
+	cg, err := generator.NewTCPServerConnGenerator(
+		gofire.Endpoint{Ip: "127.0.0.1", Port: 7777},
+	)
 	if err != nil {
 		panic(err)
 	}
-	gen = sgen
-	pcodec = gofire.NewPacketCodec(gofire.TransProtocol{Name: 1, Version: 1})
-	mcodec = proto.NewCustomMsgCodec()
-}
-
-func main() {
 	server := gofire.NewServer(
-		gen, pcodec, mcodec,
+		cg,
+		gofire.NewPacketCodec(gofire.TransProtocol{Name: 1, Version: 1}),
+		proto.NewCustomMsgCodec(),
+		onRecvMsg,
 	)
 
-	handler := &FooHandler{}
-	server.RegistAction("hello", handler)
-	err := server.Listen()
+	err = server.Listen()
 
 	if err != nil {
 		panic(err)
 	}
 }
 
-type FooHandler struct{}
+func onRecvMsg(tp gofire.Transport, msg gofire.Msg) {
+	logrus.Infof("recv msg_id: %s msg_len: %d", msg.GetID(), len(msg.GetPayload()))
 
-func (h *FooHandler) Do(req gofire.Request) {
-	msg := &proto.Message{
-		MsgId:  req.Msg.GetID(),
-		Action: "hello-resp",
-		Body: map[string]interface{}{
-			"name": "bar",
-		},
+	replyMsg := &proto.Message{
+		MsgId:   msg.GetID(),
+		Payload: []byte("reply: " + string(msg.GetPayload())),
 	}
-
-	if req.Msg.GetID() == "1" {
-		time.Sleep(2 * time.Second)
-	}
-
-	req.Stream.Write(msg)
+	tp.SendMsg(replyMsg)
 }

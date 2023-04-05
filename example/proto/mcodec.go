@@ -4,28 +4,26 @@ import (
 	"gofire/core"
 )
 
-type CustomMsgCodec struct{}
+type CustomMsgCodec struct {
+	IdLen int
+}
 
 func NewCustomMsgCodec() core.MsgCodec {
-	c := &CustomMsgCodec{}
+	c := &CustomMsgCodec{IdLen: 36}
 	return c
 }
 
 func (c *CustomMsgCodec) Encode(msg core.Msg) ([]byte, error) {
-	payload, err := msg.Serialize()
-	if err != nil {
-		return payload, err
-	}
-
-	return payload, nil
+	buf := []byte{}
+	id := []byte(msg.GetID())
+	buf = append(buf, id...)
+	buf = append(buf, msg.GetPayload()...)
+	return buf, nil
 }
 
 func (c *CustomMsgCodec) Decode(payload []byte) (core.Msg, error) {
 	msg := new(Message)
-	err := msg.Unserialize(payload)
-	if err != nil {
-		return nil, err
-	}
-
+	msg.MsgId = string(payload[:c.IdLen])
+	msg.Payload = payload[c.IdLen:]
 	return msg, nil
 }

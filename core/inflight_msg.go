@@ -1,27 +1,23 @@
 package core
 
-import (
-	"sync"
-)
-
 // represent a inflight msg
 type InflightMsg struct {
-	sync.WaitGroup
 	Resp Msg
 	Err  error
+	ch   chan struct{}
 }
 
 func newInflightMsg() *InflightMsg {
-	m := &InflightMsg{}
-	m.Add(1)
+	m := &InflightMsg{
+		ch: make(chan struct{}),
+	}
 	return m
 }
 
 func (m *InflightMsg) Done() {
-	m.WaitGroup.Done()
+	m.ch <- struct{}{}
 }
 
-func (m *InflightMsg) WaitDone() (Msg, error) {
-	m.WaitGroup.Wait()
-	return m.Resp, nil
+func (m *InflightMsg) Wait() chan struct{} {
+	return m.ch
 }
